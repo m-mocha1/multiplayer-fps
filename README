@@ -1,0 +1,5 @@
+run in mac
+
+export LIBRARY_PATH=/opt/homebrew/lib
+export C_INCLUDE_PATH=/opt/homebrew/include/SDL2
+cargo run --release
