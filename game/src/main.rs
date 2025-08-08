@@ -1,27 +1,18 @@
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
+mod map;
+mod sdl2;
+use ::sdl2::event::Event;
+use ::sdl2::keyboard::Keycode;
+use ::sdl2::pixels::Color;
+use map::{draw_maze, generate_maze};
+use sdl2::sdl2_win;
 use std::time::{Duration, Instant};
 
-fn main() -> Result<(), String> {
-    let sdl_context = sdl2::init()?;
-    let video_subsystem = sdl_context.video()?;
-
-    let window = video_subsystem
-        .window("Maze FPS", 800, 600)
-        .position_centered()
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
-    let mut event_pump = sdl_context.event_pump()?;
-
-    let mut last_frame = Instant::now();
-    let mut frame_count = 0;
-    let mut fps_timer = Instant::now();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 800, 600)?;
+    let maze = generate_maze(20, 15); // 20x15 rectangle maze
+    let cell_size = 30;
 
     loop {
-        // Event handling
         for event in event_pump.poll_iter() {
             if let Event::Quit { .. }
             | Event::KeyDown {
@@ -33,30 +24,18 @@ fn main() -> Result<(), String> {
             }
         }
 
-        // Rendering
+        // Calculate offsets to center the maze to make center the widnow for now
+        let maze_width_px = maze[0].len() as i32 * cell_size;
+        let maze_height_px = maze.len() as i32 * cell_size;
+        let offset_x = (800 - maze_width_px) / 2;
+        let offset_y = (600 - maze_height_px) / 2;
+
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
-        // Draw something simple (later: maze and players)
-        canvas.set_draw_color(Color::RGB(255, 0, 0));
-        canvas.fill_rect(sdl2::rect::Rect::new(100, 100, 50, 50))?;
+        draw_maze(&mut canvas, &maze, cell_size, offset_x, offset_y)?;
 
         canvas.present();
-
-        // FPS calculation
-        frame_count += 1;
-        let now = Instant::now();
-        if now.duration_since(fps_timer).as_secs_f32() >= 1.0 {
-            println!("FPS: {}", frame_count);
-            frame_count = 0;
-            fps_timer = now;
-        }
-
-        // Delay to cap at ~60 FPS
-        let frame_time = now.duration_since(last_frame);
-        if frame_time < Duration::from_millis(16) {
-            std::thread::sleep(Duration::from_millis(16) - frame_time);
-        }
-        last_frame = now;
+        std::thread::sleep(std::time::Duration::from_millis(16)); // 60 FPS
     }
 }
