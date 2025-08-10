@@ -20,7 +20,9 @@ pub fn sdl2_win(
         .map_err(|e| e.to_string())?;
 
     let canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
-
     let event_pump = sdl_context.event_pump()?;
+
+    sdl_context.mouse().set_relative_mouse_mode(true);
+    
     Ok((canvas, event_pump))
 }

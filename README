@@ -1,5 +1,8 @@
-run in mac
-
+to run sdl2 on mac
 export LIBRARY_PATH=/opt/homebrew/lib
 export C_INCLUDE_PATH=/opt/homebrew/include/SDL2
 cargo run --release
+
+To run sdl2 on windows
+copy sdl2 files into( target/debug)
+and place the build.rs in the game folder and cargo run from there
