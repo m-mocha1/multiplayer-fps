@@ -3,7 +3,7 @@ mod mechanics;
 mod render;
 mod sdl2;
 
-use map::{draw_maze, draw_minimap_from_grid, generate_maze, maze_to_grid};
+use map::{ draw_minimap_from_grid, generate_maze, maze_to_grid};
 use mechanics::update_player;
 use render::{Player, cast_and_draw_columns};
 use sdl2::sdl2_win;

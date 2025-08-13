@@ -46,44 +46,7 @@ fn backtrack(x: usize, y: usize, w: usize, h: usize, grid: &mut Vec<Vec<Cell>>) 
         }
     }
 }
-pub fn draw_maze(
-    canvas: &mut Canvas<Window>,
-    maze: &Vec<Vec<Cell>>,
-    cell_size: i32,
-    offset_x: i32,
-    offset_y: i32,
-) -> Result<(), String> {
-    let rows = maze.len();
-    let cols = maze[0].len();
 
-    for y in 0..rows {
-        for x in 0..cols {
-            let cell = maze[y][x];
-            let x1 = offset_x + (x as i32) * cell_size;
-            let y1 = offset_y + (y as i32) * cell_size;
-            let x2 = x1 + cell_size;
-            let y2 = y1 + cell_size;
-
-            // Set wall color
-            canvas.set_draw_color(Color::RGB(255, 255, 255));
-
-            if cell.walls[0] {
-                canvas.draw_line((x1, y1), (x2, y1))?; // top
-            }
-            if cell.walls[1] {
-                canvas.draw_line((x2, y1), (x2, y2))?; // right
-            }
-            if cell.walls[2] {
-                canvas.draw_line((x1, y2), (x2, y2))?; // bottom
-            }
-            if cell.walls[3] {
-                canvas.draw_line((x1, y1), (x1, y2))?; // left
-            }
-        }
-    }
-
-    Ok(())
-}
 
 pub fn maze_to_grid(maze: &Vec<Vec<Cell>>) -> Vec<Vec<u8>> {
     let h = maze.len();
@@ -133,7 +96,7 @@ pub fn draw_minimap_from_grid(
             if cell != 0 {
                 let x = ox + (gx as i32) * scale;
                 let y = oy + (gy as i32) * scale;
-                canvas.set_draw_color(Color::RGB(180, 180, 180));
+                canvas.set_draw_color(Color::RGB(0, 204, 204));
                 canvas.fill_rect(Rect::new(x, y, scale as u32, scale as u32))?;
             }
         }
