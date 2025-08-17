@@ -15,39 +15,40 @@ pub fn cast_and_draw_columns(
     grid: &Vec<Vec<u8>>, // 0 = empty, 1 = wall
     p: &Player,
     screen_w: i32,
-    screen_h: i32,
+    screen_h: i32, // full window height
+    reserved: i32, // reserved pixels at the bottom (e.g. for minimap)
 ) -> Result<(), String> {
-    use sdl2::pixels::Color;
-    canvas.set_draw_color(Color::RGB(12, 12, 16)); // ceiling
-    canvas.fill_rect(Rect::new(0, 0, screen_w as u32, (screen_h / 2) as u32))?;
-    canvas.set_draw_color(Color::RGB(20, 20, 24)); // floor
+    // visible area = total height minus reserved area
+    let view_h = screen_h - reserved;
+
+    // --- draw ceiling ---
+    canvas.set_draw_color(Color::RGB(12, 12, 16));
+    canvas.fill_rect(Rect::new(0, 0, screen_w as u32, (view_h / 2) as u32))?;
+
+    // --- draw floor ---
+    canvas.set_draw_color(Color::RGB(20, 20, 24));
     canvas.fill_rect(Rect::new(
         0,
-        screen_h / 2,
+        view_h / 2,
         screen_w as u32,
-        (screen_h / 2) as u32,
+        (view_h / 2) as u32,
     ))?;
-    // camera basis
+
+    // --- camera setup ---
     let dir_x = p.angle.cos();
     let dir_y = p.angle.sin();
     let plane_scale = (p.fov * 0.5).tan();
-    // 2D camera plane (perpendicular to dir)
     let plane_x = -dir_y * plane_scale;
     let plane_y = dir_x * plane_scale;
 
     for x in 0..screen_w {
-        // camera_x in [-1, 1] across the screen
         let camera_x = 2.0 * (x as f32) / (screen_w as f32) - 1.0;
-
-        // ray direction for this column
         let ray_dir_x = dir_x + plane_x * camera_x;
         let ray_dir_y = dir_y + plane_y * camera_x;
 
-        // starting cell
         let mut map_x = p.x.floor() as i32;
         let mut map_y = p.y.floor() as i32;
 
-        // distance to next x/y grid boundary along ray
         let delta_dist_x = if ray_dir_x == 0.0 {
             f32::INFINITY
         } else {
@@ -59,7 +60,6 @@ pub fn cast_and_draw_columns(
             (1.0 / ray_dir_y).abs()
         };
 
-        // step direction and initial side distances
         let (step_x, mut side_dist_x) = if ray_dir_x < 0.0 {
             (-1, (p.x - map_x as f32) * delta_dist_x)
         } else {
@@ -71,9 +71,8 @@ pub fn cast_and_draw_columns(
             (1, ((map_y as f32 + 1.0) - p.y) * delta_dist_y)
         };
 
-        // DDA: walk the grid until we hit a wall
         let mut hit = false;
-        let mut side = 0; // 0 = hit vertical side (x-step), 1 = horizontal side (y-step)
+        let mut side = 0;
         while !hit {
             if side_dist_x < side_dist_y {
                 side_dist_x += delta_dist_x;
@@ -84,7 +83,6 @@ pub fn cast_and_draw_columns(
                 map_y += step_y;
                 side = 1;
             }
-            // bounds check
             if map_y < 0
                 || map_y as usize >= grid.len()
                 || map_x < 0
@@ -92,13 +90,11 @@ pub fn cast_and_draw_columns(
             {
                 break;
             }
-            // wall hit?
             if grid[map_y as usize][map_x as usize] != 0 {
                 hit = true;
             }
         }
 
-        // perpendicular distance to avoid fisheye
         let perp_dist = if side == 0 {
             (map_x as f32 - p.x + (1 - step_x) as f32 * 0.5) / ray_dir_x
         } else {
@@ -106,13 +102,11 @@ pub fn cast_and_draw_columns(
         }
         .abs();
 
-        // project to screen: line height
         if perp_dist.is_finite() && perp_dist > 0.0001 {
-            let line_h = (screen_h as f32 / perp_dist) as i32;
-            let draw_start = (screen_h - line_h) / 2;
-            let draw_end = (screen_h + line_h) / 2;
+            let line_h = (view_h as f32 / perp_dist) as i32;
+            let draw_start = (view_h - line_h) / 2;
+            let draw_end = (view_h + line_h) / 2;
 
-            // simple shading: darker for y-sides
             let shade = if side == 1 { 180 } else { 230 };
             canvas.set_draw_color(Color::RGB(shade, shade, shade));
             canvas.draw_line((x, draw_start), (x, draw_end))?;

@@ -25,46 +25,64 @@ pub fn generate_maze(w: usize, h: usize) -> Vec<Vec<Cell>> {
     backtrack(0, 0, w, h, &mut grid);
     grid
 }
-
+// recursive backtracking to gernerate a random maze of size w x h
 fn backtrack(x: usize, y: usize, w: usize, h: usize, grid: &mut Vec<Vec<Cell>>) {
     grid[y][x].visited = true;
 
+    // shuffle directions to ensure random
     let mut dirs = vec![(0, -1, 0, 2), (1, 0, 1, 3), (0, 1, 2, 0), (-1, 0, 3, 1)];
     dirs.shuffle(&mut thread_rng());
 
+    // try all directions
     for &(dx, dy, wall, opp_wall) in &dirs {
         let nx = x as isize + dx;
         let ny = y as isize + dy;
-
+        // check maze edges
         if nx >= 0 && ny >= 0 && (nx as usize) < w && (ny as usize) < h {
             let (nx, ny) = (nx as usize, ny as usize);
+            // if the neighbor cell is not visited
             if !grid[ny][nx].visited {
+                // remove the wall between current and neighbor cell
                 grid[y][x].walls[wall] = false;
+
                 grid[ny][nx].walls[opp_wall] = false;
+                // recursively backtrack from the neighbor cell
                 backtrack(nx, ny, w, h, grid);
             }
         }
     }
 }
 
-
+// convert the maze to a grid for 3D rendering
 pub fn maze_to_grid(maze: &Vec<Vec<Cell>>) -> Vec<Vec<u8>> {
     let h = maze.len();
     let w = maze[0].len();
+    // we use *2+1 to leave space for walls so we make the cell 2*2 + 1 for the wall
     let gh = h * 2 + 1;
     let gw = w * 2 + 1;
     let mut grid = vec![vec![1u8; gw]; gh];
+    // fill the grid with walls
 
     for cy in 0..h {
+        //cell index cy
         for cx in 0..w {
+            //cell index cx
+
+            // center of the maze cell * 2 to leave space for walls
             let gx = 2 * cx + 1;
             let gy = 2 * cy + 1;
-            grid[gy][gx] = 0; // floor in the middle of each maze cell
+            grid[gy][gx] = 0; // we make center of each maze cell 0 it means it is a free space
 
+            //
             // walls: [top, right, bottom, left]
             let cell = maze[cy][cx];
 
             // open passage if there is NO wall
+            // reminder : walls are like {true : 0 , false : 1 ...}
+            // the 0 is the left wall and 1 is the top wall and so on
+            // if cell.walls[0] is true means the left wall should be there and if it is false
+            // means the left wall should not be there
+
             if !cell.walls[0] {
                 grid[gy - 1][gx] = 0;
             } // top
@@ -79,9 +97,9 @@ pub fn maze_to_grid(maze: &Vec<Vec<Cell>>) -> Vec<Vec<u8>> {
             } // left
         }
     }
-
     grid
 }
+
 pub fn draw_minimap_from_grid(
     canvas: &mut Canvas<Window>,
     grid: &[Vec<u8>],
@@ -91,6 +109,7 @@ pub fn draw_minimap_from_grid(
     oy: i32,
 ) -> Result<(), String> {
     // walls
+
     for (gy, row) in grid.iter().enumerate() {
         for (gx, &cell) in row.iter().enumerate() {
             if cell != 0 {
