@@ -111,6 +111,9 @@ pub fn draw_minimap_from_grid(
 ) -> Result<(), String> {
     // walls
 
+
+    
+
     for (gy, row) in grid.iter().enumerate() {
         for (gx, &cell) in row.iter().enumerate() {
             if cell != 0 {

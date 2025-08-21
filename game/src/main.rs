@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         cast_and_draw_columns(&mut canvas, &grid, &player, 1200, 1200, 300)?;
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.fill_rect(Rect::new(0, 900, 1200, 300))?;
-        draw_minimap_from_grid(&mut canvas, &grid, &player, 14, 8,320, 920)?;
+        draw_minimap_from_grid(&mut canvas, &grid, &player, 10, 8,340, 920)?;
         canvas.present();
     }
 

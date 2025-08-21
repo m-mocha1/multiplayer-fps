@@ -2,7 +2,7 @@
 use crate::render::Player;
 use sdl2::keyboard::{KeyboardState, Scancode};
 
-const MOVE_SPEED: f32 = 1.8; // units / second
+const MOVE_SPEED: f32 = 1.5; // units / second
 const ROT_SPEED: f32 = 1.0; // radians / second  it's the mouse sensitivity
 const RADIUS: f32 = 0.20; // player collision radius (tile = 1.0)  detect collision with walls 
 
