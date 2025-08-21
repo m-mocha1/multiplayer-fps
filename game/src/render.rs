@@ -26,7 +26,7 @@ pub fn cast_and_draw_columns(
     canvas.fill_rect(Rect::new(0, 0, screen_w as u32, (view_h / 2) as u32))?;
 
     // --- draw floor ---
-    canvas.set_draw_color(Color::RGB(20, 20, 24));
+    canvas.set_draw_color(Color::RGB(128, 128, 128));
     canvas.fill_rect(Rect::new(
         0,
         view_h / 2,
@@ -106,9 +106,12 @@ pub fn cast_and_draw_columns(
             let line_h = (view_h as f32 / perp_dist) as i32;
             let draw_start = (view_h - line_h) / 2;
             let draw_end = (view_h + line_h) / 2;
+            let mut  r:u8 = 0;
+            let mut g :u8= 0;
+            let  mut b: u8 = 0;
+           if side == 1 { r = 20;g = 52; b = 164 } else { r = 0;g = 0; b = 139 };
 
-            let shade = if side == 1 { 180 } else { 230 };
-            canvas.set_draw_color(Color::RGB(shade, shade, shade));
+            canvas.set_draw_color(Color::RGB(r, g, b));
             canvas.draw_line((x, draw_start), (x, draw_end))?;
         }
     }

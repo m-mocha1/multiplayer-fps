@@ -14,7 +14,7 @@ use ::sdl2::keyboard::Keycode;
 use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 800, 800)?;
+    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 1200, 1200)?;
 
     let maze = generate_maze(20, 15);
     let grid = maze_to_grid(&maze);
@@ -65,10 +65,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         update_player(&mut player, &grid, &kbd, dt); // should NOT rotate anymore if mouse controls angle
 
         // --- render ---
-        cast_and_draw_columns(&mut canvas, &grid, &player, 800, 800, 200)?;
+        cast_and_draw_columns(&mut canvas, &grid, &player, 1200, 1200, 300)?;
         canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.fill_rect(Rect::new(0, 600, 800, 200))?;
-        draw_minimap_from_grid(&mut canvas, &grid, &player, 4, 300, 650)?;
+        canvas.fill_rect(Rect::new(0, 900, 1200, 300))?;
+        draw_minimap_from_grid(&mut canvas, &grid, &player, 14, 8,320, 920)?;
         canvas.present();
     }
 

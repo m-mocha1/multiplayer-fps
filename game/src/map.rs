@@ -104,7 +104,8 @@ pub fn draw_minimap_from_grid(
     canvas: &mut Canvas<Window>,
     grid: &[Vec<u8>],
     player: &Player,
-    scale: i32,
+    scale_x: i32,
+    scale_y: i32,
     ox: i32,
     oy: i32,
 ) -> Result<(), String> {
@@ -113,22 +114,22 @@ pub fn draw_minimap_from_grid(
     for (gy, row) in grid.iter().enumerate() {
         for (gx, &cell) in row.iter().enumerate() {
             if cell != 0 {
-                let x = ox + (gx as i32) * scale;
-                let y = oy + (gy as i32) * scale;
-                canvas.set_draw_color(Color::RGB(0, 204, 204));
-                canvas.fill_rect(Rect::new(x, y, scale as u32, scale as u32))?;
+                let x = ox + (gx as i32) * scale_x;
+                let y = oy + (gy as i32) * scale_y;
+                canvas.set_draw_color(Color::RGB(241, 241, 238));
+                canvas.fill_rect(Rect::new(x, y, scale_x as u32, scale_y as u32))?;
             }
         }
     }
 
     // player marker (red square)
-    let px = ox + (player.x * scale as f32) as i32;
-    let py = oy + (player.y * scale as f32) as i32;
+    let px = ox + (player.x * scale_x as f32) as i32;
+    let py = oy + (player.y * scale_y as f32) as i32;
     canvas.set_draw_color(Color::RGB(255, 0, 0));
-    canvas.fill_rect(Rect::new(px - 2, py - 2, 4, 4))?;
+    canvas.fill_rect(Rect::new(px - 2, py - 2, 8, 8))?;
 
     // facing direction (yellow line)
-    let look_len = (6 * scale).max(8) as f32;
+    let look_len = (3 * scale_x).max(3) as f32;
     let lx = px as f32 + player.angle.cos() * look_len;
     let ly = py as f32 + player.angle.sin() * look_len;
     canvas.set_draw_color(Color::RGB(255, 255, 0));
