@@ -1,20 +1,29 @@
+mod fps;
 mod map;
 mod mechanics;
 mod render;
 mod sdl2;
+
+use ::sdl2::event::Event;
+use ::sdl2::keyboard::Keycode;
 use ::sdl2::pixels::Color;
 use ::sdl2::rect::Rect;
+use std::time::Instant;
+
+use ::sdl2::ttf;
+use fps::FpsCounter;
 use map::{draw_minimap_from_grid, generate_maze, maze_to_grid};
 use mechanics::update_player;
 use render::{Player, cast_and_draw_columns};
 use sdl2::sdl2_win;
 
-use ::sdl2::event::Event;
-use ::sdl2::keyboard::Keycode;
-use std::time::Instant;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 800, 800)?;
+    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 1200, 1200)?;
+
+    let ttf_context = ttf::init()?;
+    let texture_creator = canvas.texture_creator();
+
+    let mut fps_counter = FpsCounter::new(&ttf_context, "font/Regular.ttf", 24)?;
 
     let maze = generate_maze(20, 15);
     let grid = maze_to_grid(&maze);
@@ -24,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         y: 1.5,
         angle: 0.0,
         fov: std::f32::consts::FRAC_PI_3,
-        move_speed: 3.0, // if your update_player uses constants, these can be 0.0
+        move_speed: 3.0,
         rot_speed: 2.5,
     };
 
@@ -32,7 +41,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mouse_sensitivity: f32 = 0.0025;
 
     'game: loop {
-        // --- events ---
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -56,19 +64,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        // --- dt + movement ---
         let now = Instant::now();
         let dt = (now - last).as_secs_f32();
         last = now;
 
         let kbd = event_pump.keyboard_state();
-        update_player(&mut player, &grid, &kbd, dt); // should NOT rotate anymore if mouse controls angle
+        update_player(&mut player, &grid, &kbd, dt);
 
-        // --- render ---
-        cast_and_draw_columns(&mut canvas, &grid, &player, 800, 800, 200)?;
+        // --- render world ---
+        cast_and_draw_columns(&mut canvas, &grid, &player, 1200, 1200, 300)?;
         canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.fill_rect(Rect::new(0, 600, 800, 200))?;
-        draw_minimap_from_grid(&mut canvas, &grid, &player, 4, 300, 650)?;
+        canvas.fill_rect(Rect::new(0, 900, 1200, 300))?;
+        draw_minimap_from_grid(&mut canvas, &grid, &player, 10, 8, 340, 920)?;
+
+        // --- update + draw FPS ---
+        fps_counter.update();
+        fps_counter.draw(&mut canvas, &texture_creator)?;
+
         canvas.present();
     }
 
