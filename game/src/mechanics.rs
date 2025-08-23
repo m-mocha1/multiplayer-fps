@@ -7,13 +7,12 @@ const ROT_SPEED: f32 = 1.0; // radians / second  it's the mouse sensitivity
 const RADIUS: f32 = 0.20; // player collision radius (tile = 1.0)  detect collision with walls 
 
 pub fn update_player(player: &mut Player, grid: &[Vec<u8>], kbd: &KeyboardState, mut dt: f32) {
-    // acceleration
-    // Speeds are per-second; scale by dt to enxure uniform movement speed
+    // acceleration Speeds are per-second; scale by dt to enxure uniform movement speed
     // acroos different frame rates
     let move_speed = MOVE_SPEED * dt;
     let rot_speed = ROT_SPEED * dt;
 
-    // Rotate
+    // Rotate / mouse look
     if kbd.is_scancode_pressed(Scancode::Left) {
         player.angle -= rot_speed;
     }
@@ -48,14 +47,14 @@ pub fn update_player(player: &mut Player, grid: &[Vec<u8>], kbd: &KeyboardState,
         mv_y -= side_y * move_speed;
     }
 
-    // Early out if no movement
+    // if the player is not moving, skip the skip collision checks which is the rest of the function
     if mv_x == 0.0 && mv_y == 0.0 {
         return;
     }
 
-    let (mut nx, mut ny) = (player.x + mv_x, player.y + mv_y);
+    let (mut nx, mut ny) = (player.x + mv_x, player.y + mv_y); // newest position if no collision
 
-    // ---- Collision with radius + axis separation (allows sliding) ----
+    // ---- Collision with radius + axis separation (allows sliding on walls with no sticking ) ----
     // helper to test if a circle at (x,y) with radius R intersects any wall cell
     let can_stand = |x: f32, y: f32, grid: &[Vec<u8>]| -> bool {
         // check the 3x3 neighborhood around the player
@@ -107,14 +106,5 @@ pub fn update_player(player: &mut Player, grid: &[Vec<u8>], kbd: &KeyboardState,
     ny = player.y + mv_y;
     if can_stand(player.x, ny, grid) {
         player.y = ny;
-    }
-
-    // keep angle bounded (optional)
-    use std::f32::consts::PI;
-    if player.angle > PI {
-        player.angle -= 2.0 * PI;
-    }
-    if player.angle < -PI {
-        player.angle += 2.0 * PI;
     }
 }

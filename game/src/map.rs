@@ -20,6 +20,7 @@ impl Cell {
     }
 }
 
+//for genrating a random maze where each x,y is a cell with 4 walls and flag visited
 pub fn generate_maze(w: usize, h: usize) -> Vec<Vec<Cell>> {
     let mut grid = vec![vec![Cell::new(); w]; h];
     backtrack(0, 0, w, h, &mut grid);
@@ -30,16 +31,18 @@ fn backtrack(x: usize, y: usize, w: usize, h: usize, grid: &mut Vec<Vec<Cell>>) 
     grid[y][x].visited = true;
 
     // shuffle directions to ensure random
+        // each tuple is (dx, dy, wall_index, opposite_wall_index) for example 
+        // (0, -1, 0, 2) means moving up (dy=-1) removes the top wall of current cell (index 0) and 2 is the bottom wall of the neighbor cell
     let mut dirs = vec![(0, -1, 0, 2), (1, 0, 1, 3), (0, 1, 2, 0), (-1, 0, 3, 1)];
     dirs.shuffle(&mut thread_rng());
 
     // try all directions
     for &(dx, dy, wall, opp_wall) in &dirs {
-        let nx = x as isize + dx;
-        let ny = y as isize + dy;
+        let nx = x as isize + dx; // neighbor x
+        let ny = y as isize + dy; // neighbor y
         // check maze edges
         if nx >= 0 && ny >= 0 && (nx as usize) < w && (ny as usize) < h {
-            let (nx, ny) = (nx as usize, ny as usize);
+            let (nx, ny) = (nx as usize, ny as usize); 
             // if the neighbor cell is not visited
             if !grid[ny][nx].visited {
                 // remove the wall between current and neighbor cell
@@ -55,13 +58,18 @@ fn backtrack(x: usize, y: usize, w: usize, h: usize, grid: &mut Vec<Vec<Cell>>) 
 
 // convert the maze to a grid for 3D rendering
 pub fn maze_to_grid(maze: &Vec<Vec<Cell>>) -> Vec<Vec<u8>> {
-    let h = maze.len();
-    let w = maze[0].len();
+    let h = maze.len(); 
+    let w = maze[0].len(); 
     // we use *2+1 to leave space for walls so we make the cell 2*2 + 1 for the wall
     let gh = h * 2 + 1;
     let gw = w * 2 + 1;
-    let mut grid = vec![vec![1u8; gw]; gh];
+    let mut grid = vec![vec![1u8; gw]; gh]; // 2d arr of u8 1 (wall) whith col = gh x rows = gw
     // fill the grid with walls
+
+    //every cell in the maze takes a 3x3 area in the grid with walls
+    //look at the drawing in t.tldr
+
+    
 
     for cy in 0..h {
         //cell index cy
