@@ -17,8 +17,11 @@ use mechanics::update_player;
 use render::{Player, cast_and_draw_columns};
 use sdl2::sdl2_win;
 
+use crate::render::OtherPlayer;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 1200, 1200)?;
+    // let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 1200, 1200)?; // for 2k monitor
+    let (mut canvas, mut event_pump) = sdl2_win("Maze FPS", 1200, 1000)?; // for 1080p monitor
 
     let ttf_context = ttf::init()?;
     let texture_creator = canvas.texture_creator();
@@ -36,6 +39,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         move_speed: 3.0,
         rot_speed: 2.5,
     };
+
+    let mut others = vec![
+        OtherPlayer { x: 3.5, y: 3.5 },
+        OtherPlayer { x: 5.5, y: 5.5 },
+        OtherPlayer { x: 7.5, y: 7.5 },
+    ];
 
     let mut last = Instant::now();
     let mouse_sensitivity: f32 = 0.0025;
@@ -71,12 +80,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let kbd = event_pump.keyboard_state();
         update_player(&mut player, &grid, &kbd, dt);
 
-        // --- render world ---
-        cast_and_draw_columns(&mut canvas, &grid, &player, 1200, 1200, 300)?;
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.fill_rect(Rect::new(0, 900, 1200, 300))?;
-        draw_minimap_from_grid(&mut canvas, &grid, &player, 10, 8, 340, 920)?;
+        // // --- render world for 2k---
+        // cast_and_draw_columns(&mut canvas, &grid, &player, 1200, 1200, 300)?;
+        // canvas.set_draw_color(Color::RGB(0, 0, 0));
+        // canvas.fill_rect(Rect::new(0, 900, 1200, 300))?;
+        // draw_minimap_from_grid(&mut canvas, &grid, &player, 10, 8, 340, 920)?;
 
+        // --- render world for 1080p---
+        cast_and_draw_columns(&mut canvas, &grid, &player, &others, 1200, 1000, 200)?;
+        canvas.set_draw_color(Color::RGB(0, 0, 0)); // color for the map background at the bottom
+        canvas.fill_rect(Rect::new(0, 800, 1200, 200))?; // draw black rectangle at the bottom
+        draw_minimap_from_grid(&mut canvas, &grid, &player, 8, 6, 340, 800)?;
         // --- update + draw FPS ---
         fps_counter.update();
         fps_counter.draw(&mut canvas, &texture_creator)?;
